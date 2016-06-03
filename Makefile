@@ -28,7 +28,7 @@ $(PROG).so: $(OBJS) $(PROG).pyf
 	$(F2PY) $(F2PY_FLAGS) -c $(PROG).pyf *.f90
 
 clean:
-	rm -f $(PROG).so $(PROG).pyf $(OBJS) *.mod
+	rm -f $(PROG).so $(PROG).pyf $(OBJS) *.mod quickbeam.pyc
 
 .SUFFIXES: $(SUFFIXES) .f90
 

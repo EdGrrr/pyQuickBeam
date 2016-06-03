@@ -1,151 +1,60 @@
---------------------------------------------------------------------------
-QuickBeam version 1.1a
---------------------------------------------------------------------------
+##############################
+quickbeam.py - python interface to the quickbeam radar simulator
 
-Contents of README
+Edward Gryspeerdt, Universität Leipzig - June 2016
+##############################
 
-1.   Package description
-2.   Installation
-3.   Change log
-4.   Usage terms
-5.   Contact information
 
---------------------------------------------------------------------------
-1. Package description
---------------------------------------------------------------------------
+1. Introduction
+---------------
+This is a python interface to the quickbeam radar simulator (v1.1a) by
+John Haynes.
 
-QuickBeam is a meteorological radar simulation package. It is capable of
-simulating vertical radar reflectivity profiles at any common microwave
-frequency, from either the top-down (i.e. satellite-based radars such as
-CloudSat) or the bottom-up. The user provides information about the state
-of the atmosphere and the water species contained therein, and the
-simulator produces profiles of effective radar reflectivity factor that
-emulates what a physical radar system would observe. 
+Not all features are implemented yet, inparticular monodisperse
+droplet spectra and some of the readin functions.  However, many of
+these functions are now superceeded by the python interface.  Several
+of the functions in use are just f2py wrappers around the quickbeam
+code itself, with the main rewrite being the radar_simulator.f90 code
+and the data access functions.
 
-See the included User's Guide, userguide.pdf, for a more complete
-description of the package and usage instructions.
 
---------------------------------------------------------------------------
 2. Installation
---------------------------------------------------------------------------
+---------------
+Run 'make' in the main directory.  Add this directory to your
+$PYTHONPATH.
 
-For installation instructions, see the included User's Guide,
-userguide.pdf (found in the docs directory). The latest version of the
-software, including full source code and an example case, are available
-at the author's web site:
 
-http://cloudsat.atmos.colostate.edu/radarsim
+3. Usage
+--------
+Much of the design is the same as quickbeam itself.  The simulator is
+run from the Quickbeam class, which does much of the setup upon
+initialisation (reading in the mie tables etc.).  Details can be
+changed in this instance (such as the hydrometeor data) and the
+simulator is run by calling the 'radarsim' method, returning the
+effective and attenuation corrected Z.
 
-For the hasty,
+Example (using quickbeam example data):
 
-   1. Change to the directory containing the source code.
-   2. Edit the Makefile to reflect your Fortran compiler.
-          F90 = (complete path to your compiler)
-   3. Type "make".
-   4. An executable named "driver" should be produced.
+import quickbeam
+qb = quickbeam.Quickbeam()
+reflectivity = qb.radarsim()
 
-If this doesn't work, refer to the User's Guide.
+The structure of the Quickbeam object is
 
---------------------------------------------------------------------------
-3. Change log
---------------------------------------------------------------------------
+Quickbeam
+- settings - dictionary of the radar simulator settings
+|             used to be in settings.dat
+- met      - dictionary of meteorological data.  Requires
+|             four keys, all with shape (ngate, nprofiles)
+|             Temperature (K)
+|             Pressure (mb)
+|             Height (km)
+|             RH (%)
+- hclass   - list of hydrometeor data.  Each entry is a
+             dictionary of the hydrometor parameters.
+             The data for each class is now included in
+             an entry with the key 'data', with shape
+             (ngate, nprofiles)
 
-v1.1a (2008 Sep 10)
-
--  Reduced default number of particles in the internal size distribution, 
-which had been left at an unnecessarily high value; this change resulted 
-in significant speedup. New Mie lookup tables generated.
-
-v1.1 (2007 Oct 23)
-
-- Changed method of calculating index of refraction of ice-air mixtures, 
-favoring the Bruggeman approach. Mie table binary file is changed.
-- Fixed bug where ice density used to calculate index of refraction
-became unreaslitically large, now restrict ice effective densities to the
-range of 5 to 917 kg m^-3.
-- Various speedups, minor bug fixes, some code restructuring in prepa- 
-ration for inclusion of melting particle effects.
-
-v1.03 (2006 Oct 06) 
-
-- Introduced scaling factors to more quickly calculate DSDs, resulting 
-in a significant speed increase. 
-- Streamlined Mie table calculations. 
-- Fixed bug in referencing Mie table with monodisperse distribution. 
-- Fixed bug that caused NaN in constant-density calculations. 
-- Fixed bug whereby Rayleigh reflectivity was reported as NaN. - Fixed 
-bug processing multiple profiles with different numbers of range gates. 
-(v1.03b, 2006 Nov 22) 
-- Fixed bug in gamma function scaling factor, fixed compiler compati- 
-bility issue in driver. (v1.03a, 2006 Nov 08)
-- Hyrometeor mixing ratios may now be specified in either grams per 
-kilogram or grams per cubic meter. Changed meaning of the CM pa- 
-rameter in hclass file. (v1.03c, 2007 Mar 7) 
-- Removed functionality of the COL parameter in hclass file, as it no 
-longer has a purpose. Input mixing ratios in the same order they are 
-defined in hclass file. (v1.03c, 2007 Mar 7) 
-- Various minor bug fixes. (v1.03c, 2007 Mar 7) 
-- Fixed bug processing multiple profiles with different numbers of range 
-gates (v1.03b, 2006 Nov 22) 
-- Fixed bug in gamma function scaling factor, fixed compiler compati- 
-bility issue in driver (v1.03a, 2006 Nov 08)
-
-v1.02 (2006 Aug 23) 
-
-- There is now only one array of discrete drop sizes; this array is set 
-on a log-linear scale so there is adequate coverage for both small and 
-large particles. 
-- Changed the way hydrometeor classes are defined and input; require 
-file hclass.dat 
-- Added monodisperse, exponential, and lognormal distributions. 
-- Compartmentalization of the simulation portion of the code into its 
-own routine separate from the driver. (v1.02a, 2006 Sep 29) 
-- The file settings.dat is now mandatory. 
-- Fixed bug where N was not properly initialized. 
-- Fixed calculation of gaseous attenuation. 
-- Fixed situation where hydrometeor phase was not set to proper value 
-after changing from one type to another. 
-
-v1.01 (2006 Jun 1) 
-
-- Initial pre-release.
-
---------------------------------------------------------------------------
-4. Usage terms
---------------------------------------------------------------------------
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY 
-KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE 
-WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR 
-PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
-OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
- 
-This software is distributed as "freeware," meaning you are
-granted the right to use this software and modify it as you
-see fit. If you distribute modified copies or incorporate
-it into other software, please include this documentation,
-make it clear that the copy is indeed modified from the
-original, document your changes, and specify where an
-original copy of the software can be found. If modified
-copies are to be made publicly available, make the source
-code also publicly available so that everyone can benefit
-from your modifications.
-
---------------------------------------------------------------------------
-5. Contact information
---------------------------------------------------------------------------
-
-John M. Haynes
-
-Department of Atmospheric Science 
-Colorado State University 
-Fort Collins, CO 80523 
-Phone: 970-491-8124 
-
-Email: haynes@atmos.colostate.edu 
-
-The latest version of the simulator is available from: 
-http://cloudsat.atmos.colostate.edu/radarsim 
+The output is returned from the 'radarsim' call, there is no longer
+an output file.
