@@ -1,11 +1,11 @@
 PROG =	radsim
 
-SRCS =	array_lib.f90 dsd.f90 dsd_melt.f90 gases.f90 math_lib.f90 \
-	mrgrnk.f90 optical_melt.f90 optical_sphere.f90 optics_lib.f90 \
+SRCS =	array_lib.f90 dsd.f90 gases.f90 math_lib.f90 \
+	mrgrnk.f90 optical_sphere.f90 optics_lib.f90 \
 	zeff.f90
 
-OBJS =	array_lib.o dsd.o dsd_melt.o gases.o math_lib.o mrgrnk.o \
-	optical_melt.o optical_sphere.o optics_lib.o \
+OBJS =	array_lib.o dsd.o gases.o math_lib.o mrgrnk.o \
+	optical_sphere.o optics_lib.o \
 	zeff.o
 
 LIBS =	
