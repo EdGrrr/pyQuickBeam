@@ -58,3 +58,37 @@ Quickbeam
 
 The output is returned from the 'radarsim' call, there is no longer
 an output file.
+
+The settings are
+{
+'freq': radar frequency
+'surface_radar': surface (1) or spaceborne (0) radar
+'use_mie_table': use pre-computed mie data (1)
+'use_gas_abs': calculate gas absorption (1)
+'do_ray': Perform rayleigh calculations (1)
+'k2': k2 value as default (-1)
+'hydro_file': hydrometeor data file (if using text file)
+                  load into Quickbeam instance with read_hydrodata()
+                  make sure to call read_class first if updating
+                  hydrometor properties
+'hclass_file': hydrometeor class data
+                  load into Quickbeam instance with read_hclass()
+'mie_table_name': location of the pre-computed mie data.  Changing this
+                    is not recommened as some assumptions on the table
+                    structure are made in the code
+} 
+
+For each hydrometeor type, the dictionary in hclass is
+'id': id number
+'type': size distribution function (-1 to ignore this class)
+'col':
+'phase': Liquid (0) or Ice (1)
+'cp':
+'dmin', 'dmax': Max and min of the size distribution,
+                    currently ignored
+'apm', 'bpm': For calculating the density-size relationship
+'rho': Density (if using constant density
+'p1', 'p2', 'p3': Parameters for size distribution
+'name': Name of class (not required)
+'data': Hydrometeor concentration (g/ m3) 
+
