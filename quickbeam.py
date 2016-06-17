@@ -4,9 +4,6 @@ import radsim
 
 metnames = ['Height', 'Pressure',
             'Temperature', 'RH']
-hydronames = ['Cloud Water', 'Rain',
-              'Snow', 'Aggregate',
-              'Graupel', 'Ice']
 hclasscols = ('id', 'type', 'col', 'phase',
               'cp', 'dmin', 'dmax',
               'apm', 'bpm', 'rho', 'p1', 'p2', 'p3', 'name')
@@ -62,14 +59,12 @@ class Quickbeam:
         for hm in self.hclass:
             if hm['type'] < 0:
                 continue
-            # Rho_eff calcualtion should only be done once
-            if (hm['phase'] == 1) & (hm['rho'] == -1):
-                rho_eff = (6/np.pi)*hm['apm']*(D*1e-6)**(hm['bpm']-3)
-                rho_eff[rho_eff < 5] = 5.
-                rho_eff[rho_eff > 917] = 917.
-                hm['f'] = np.digitize(rho_eff/917., self.mt['f_bins'])
-            else:
-                rho_eff = np.zeros(D.shape) + hm['rho']
+            # Rho_eff calculation should only be done once
+            #if (hm['phase'] == 1): now done for all types
+            rho_eff = (6/np.pi)*hm['apm']*(D*1e-6)**(hm['bpm']-3)
+            rho_eff[rho_eff < 5] = 5.
+            rho_eff[rho_eff > 917] = 917.
+            hm['f'] = np.digitize(rho_eff/917., self.mt['f_bins'])
 
             for g in range(z_vol.shape[0]):
                 for p in range(z_vol.shape[1]):
@@ -114,7 +109,7 @@ class Quickbeam:
                                    rho_a[g, p],
                                    self.met['Temperature'][g, p]-273.15,
                                    hm['dmin'],
-                                   hm['dmax'], hm['rho'], hm['p1'], hm['p2'],
+                                   hm['dmax'], hm['p1'], hm['p2'],
                                    hm['p3'], hm['fc'],
                                    hm['scaled'], hm['apm'], hm['bpm'])
                     # print N
@@ -219,11 +214,16 @@ class Quickbeam:
 
     def read_hclass(self):
         self.hclass = []
-        classinput = np.genfromtxt(self.settings['hclass_file'])
-        for i in range(6):
-            self.hclass.append({hclasscols[j]: classinput[i, j]
-                                for j in range(classinput.shape[1])})
-            self.hclass[i]['name'] = hydronames[i]
+        classinput = np.genfromtxt(self.settings['hclass_file'],
+                                   dtype=['f']*(len(hclasscols)-1)+['S30'])
+        for i in range(len(classinput)):
+            tempdict = {hclasscols[j]: classinput[i][j]
+                        for j in range(len(classinput[0]))}
+            if (tempdict['rho']>0) and (tempdict['apm']<0):
+                tempdict['apm'] = (np.pi/6.)*tempdict['rho']
+                tempdict['bpm'] = 3.
+            del(tempdict['rho'])
+            self.hclass.append(tempdict)
 
     def read_hydrodata(self):
         hm_input = np.genfromtxt(self.settings['hydro_file'], skip_header=2)

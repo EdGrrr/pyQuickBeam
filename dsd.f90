@@ -1,5 +1,5 @@
   subroutine dsd(Q,D,nsizes,dtype,rho_a,tc, &
-             dmin,dmax,rho_c,p1,p2,p3,fc,scaled,apm,bpm,N)
+             dmin,dmax,p1,p2,p3,fc,scaled,apm,bpm,N)
   use array_lib
   use math_lib 
   implicit none
@@ -12,6 +12,7 @@
 ! Inputs:
 !   [Q]        hydrometeor mixing ratio (g/kg)
 !   [D]        discrete drop sizes (um)
+!   [Nc]        total number concentration (1/cm^3)  
 !   [nsizes]   number of elements of [D]
 !   [dtype]    distribution type
 !   [rho_a]    ambient air density (kg m^-3)
@@ -19,6 +20,7 @@
 !   [dmin]     minimum size cutoff (um)
 !   [dmax]     maximum size cutoff (um)
 !   [rho_c]    alternate constant density (kg m^-3)
+!      Now removed
 !   [p1],[p2],[p3]  distribution parameters
 !
 ! Input/Output:
@@ -47,12 +49,12 @@
   integer*4, intent(in) :: nsizes
   integer, intent(in) :: dtype
   real*8, intent(in) :: Q,D(nsizes),rho_a,tc,dmin,dmax, &
-    rho_c,p1,p2,p3
+    p1,p2,p3,apm,bpm
     
 ! ----- INPUT/OUTPUT -----
 
-  real*8, intent(inout) :: fc(nsizes),apm,bpm
   logical, intent(inout) :: scaled  
+  real*8, intent(inout) :: fc(nsizes)
     
 ! ----- OUTPUTS -----
 
@@ -72,10 +74,11 @@
   pi = acos(-1.0)
   
 ! // if density is constant, store equivalent values for apm and bpm
-  if ((rho_c > 0) .and. (apm < 0)) then
-    apm = (pi/6)*rho_c
-    bpm = 3.
-  endif
+  !Now done at readin
+  !if ((rho_c > 0) .and. (apm < 0)) then
+  !  apm = (pi/6)*rho_c
+  !  bpm = 3.
+  !endif
   
   select case(dtype)
   
@@ -112,8 +115,10 @@
 
 !     // N0, vu are given    
       np = p1
-      vu = p3 
+      vu = p3
       N0 = np*rho_a
+      
+      write (*,*) N0
       tmp1 = (Q*1E-3)**(1./bpm)
       
       if (scaled .eqv. .false.) then
