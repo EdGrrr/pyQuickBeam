@@ -2,6 +2,8 @@ import numpy as np
 import struct
 import radsim
 
+DEBUG = True
+
 metnames = ['Height', 'Pressure',
             'Temperature', 'RH']
 hclasscols = ('id', 'type', 'col', 'phase',
@@ -66,6 +68,11 @@ class Quickbeam:
             rho_eff[rho_eff > 917] = 917.
             hm['f'] = np.digitize(rho_eff/917., self.mt['f_bins'])
 
+            #Set twomoment flag
+            tm_flag = (hm['type'] in [1, 6])*(hm['p1']==-2)
+            if DEBUG:
+                print hm['name'], tm_flag
+            
             for g in range(z_vol.shape[0]):
                 for p in range(z_vol.shape[1]):
                     if hm['data'][g, p] == 0:
@@ -105,14 +112,23 @@ class Quickbeam:
                         hm['fc'] = np.zeros(D.shape)
                         hm['scaled'] = 0
 
-                    N = radsim.dsd(hm['data'][g, p], D, hm['type'],
-                                   rho_a[g, p],
-                                   self.met['Temperature'][g, p]-273.15,
-                                   hm['dmin'],
-                                   hm['dmax'], hm['p1'], hm['p2'],
-                                   hm['p3'], hm['fc'],
-                                   hm['scaled'], hm['apm'], hm['bpm'])
-                    # print N
+                    if tm_flag:
+                        N = radsim.dsd(hm['data'][g, p], D, hm['type'],
+                                       rho_a[g, p],
+                                       self.met['Temperature'][g, p]-273.15,
+                                       hm['dmin'],hm['dmax'],
+                                       hm['number'][g, p], hm['p2'],
+                                       hm['p3'], hm['fc'],
+                                       hm['scaled'], hm['apm'], hm['bpm'])
+                    else:
+                        N = radsim.dsd(hm['data'][g, p], D, hm['type'],
+                                       rho_a[g, p],
+                                       self.met['Temperature'][g, p]-273.15,
+                                       hm['dmin'],hm['dmax'],
+                                       hm['p1'], hm['p2'],
+                                       hm['p3'], hm['fc'],
+                                       hm['scaled'], hm['apm'], hm['bpm'])
+                        # print N
                     ze, zr, kr = radsim.zeff(self.settings['freq'],
                                              D,
                                              N,
