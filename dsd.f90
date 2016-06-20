@@ -114,11 +114,17 @@
     elseif (vals_equal(p2,-1)) then
 
 !     // N0, vu are given    
-      np = p1
-      vu = p3
-      N0 = np*rho_a
+       np = p1
+       N0 = np*rho_a
+       if (vals_differ(p3,-2)) then
+          !If p3 is -2, use Thompson size parameter - check units! 
+          vu = p3
+       else
+          vu = MIN(15., (1000.E6/N0 + 2.))
+       endif
+       write (*,*) vu
       
-      write (*,*) N0
+      !write (*,*) N0
       tmp1 = (Q*1E-3)**(1./bpm)
       
       if (scaled .eqv. .false.) then
@@ -319,7 +325,36 @@
       stop
     
     endif
-    
+
+! ---------------------------------------------------------!
+! // modified gamma (ed version)                                       !
+! ---------------------------------------------------------!
+! :: N0 = total number concentration (m^-3)
+! :: np = fixed number concentration (kg^-1)
+! :: D0 = characteristic diameter (um)
+! :: dm = mean diameter (um)
+! :: vu = distribution width parameter
+
+  case(6)  
+     !write (*,*) 'Ed gamma 2'
+!     // N0, vu are given    
+     np = p1
+     N0 = np*rho_a
+     if (vals_differ(p3,-2)) then
+        !If p3 is -2, use Thompson size parameter - check units! 
+        vu = p3
+     else
+        vu = MIN(15., (1000.E6/N0 + 2.))
+     endif
+     write (*,*) vu
+     
+     !write (*,*) N0
+     
+     D0 = 1E6*(Q*1e-3 * gamma(vu) / &
+          (apm*np*gamma(vu+bpm)))**(1/bpm)
+     write (*,*) D0
+     N = (np*rho_a/(gamma(vu)*(D*1e-6)))*(D/D0)*exp(-1*D/D0)*1e-12
+
   end select
   
   end subroutine dsd
