@@ -111,18 +111,33 @@
            
       N = fc*rho_a*(Q*1E-3)
     
-    elseif (vals_equal(p2,-1)) then
-
-!     // N0, vu are given    
-       np = p1
-       N0 = np*rho_a
-       if (vals_differ(p3,-2)) then
-          !If p3 is -2, use Thompson size parameter - check units! 
-          vu = p3
+   elseif (vals_equal(p3, -1)) then
+      !     // vu isn't given
+      print *, 'Error: Must specify a value for vu'
+      stop
+      
+   else
+       !     // N0, vu are given
+       if (vals_equal(p2, -2)) then
+          !units of p1 is in per m3
+          np = p1/rho_a
        else
-          vu = MIN(15., (1000.E6/N0 + 2.))
+          np = p1
        endif
-       write (*,*) vu
+       
+       N0 = np*rho_a
+
+       if (vals_equal(p3,-2)) then
+          !If p3 is -2, use Thompson size parameter - check units! 
+          vu = MIN(15., (1000.E6/N0 + 2.)) -1
+       elseif (vals_equal(p3, -3)) then
+          ! Morrison shape parameter
+          vu = (1/(0.0005714*(N0/1.E6)+0.2714))**2 -1
+          vu = MIN(MAX(vu,2.),10.)
+       else
+          vu = p3
+       endif
+       !write (*,*) vu
       
       !write (*,*) N0
       tmp1 = (Q*1E-3)**(1./bpm)
@@ -140,13 +155,7 @@
           (rho_a*np*fc*(D*1E-6)**(-1.))/(gamma(vu)*tmp1**vu) * &
           exp(-1.*fc**(1./vu)/tmp1) &
           ) * 1E-12
-          
-    else
-
-!     // vu isn't given
-      print *, 'Error: Must specify a value for vu'
-      stop
-    
+             
     endif
     
 ! ---------------------------------------------------------!
@@ -346,13 +355,13 @@
      else
         vu = MIN(15., (1000.E6/N0 + 2.))
      endif
-     write (*,*) vu
+     !write (*,*) vu
      
      !write (*,*) N0
      
      D0 = 1E6*(Q*1e-3 * gamma(vu) / &
           (apm*np*gamma(vu+bpm)))**(1/bpm)
-     write (*,*) D0
+     !write (*,*) D0
      N = (np*rho_a/(gamma(vu)*(D*1e-6)))*(D/D0)*exp(-1*D/D0)*1e-12
 
   end select
