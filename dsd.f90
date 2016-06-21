@@ -12,7 +12,6 @@
 ! Inputs:
 !   [Q]        hydrometeor mixing ratio (g/kg)
 !   [D]        discrete drop sizes (um)
-!   [Nc]        total number concentration (1/cm^3)  
 !   [nsizes]   number of elements of [D]
 !   [dtype]    distribution type
 !   [rho_a]    ambient air density (kg m^-3)
@@ -70,6 +69,21 @@
   
   real*8 :: tmp1, tmp2
   real*8 :: pi
+
+  ! Parameters for Field 2005 distribution
+  REAL*8 :: mob, mo2, mo3, loga_, a_, b_, cse, omo3, mrat, mo0, slam1, slam2
+  REAL, DIMENSION(10), PARAMETER:: &
+       sa = (/ 5.065339, -0.062659, -3.032362, 0.029469, -0.000285, &
+       0.31255,   0.000204,  0.003199, 0.0,      -0.015952/)
+  REAL, DIMENSION(10), PARAMETER:: &
+       sb = (/ 0.476221, -0.015896,  0.165977, 0.007468, -0.000141, &
+                     0.060366,  0.000079,  0.000594, 0.0,      -0.003577/) 
+  REAL*8, PARAMETER :: mu_s = 0.6357
+  REAL*8, PARAMETER :: kap0 = 490.6
+  REAL*8, PARAMETER :: kap1 = 17.46
+  REAL*8, PARAMETER :: lam0 = 20.78
+  REAL*8, PARAMETER :: lam1 = 3.29
+
   
   pi = acos(-1.0)
   
@@ -335,35 +349,58 @@
     
     endif
 
-! ---------------------------------------------------------!
-! // modified gamma (ed version)                                       !
-! ---------------------------------------------------------!
-! :: N0 = total number concentration (m^-3)
-! :: np = fixed number concentration (kg^-1)
-! :: D0 = characteristic diameter (um)
-! :: dm = mean diameter (um)
-! :: vu = distribution width parameter
-
   case(6)  
-     !write (*,*) 'Ed gamma 2'
-!     // N0, vu are given    
-     np = p1
-     N0 = np*rho_a
-     if (vals_differ(p3,-2)) then
-        !If p3 is -2, use Thompson size parameter - check units! 
-        vu = p3
+    ! Dual gamma distribution from Field et al. 2005
+    ! Adapted from Tompson microphysics code in WRF
+     cse = bpm + 1
+     
+     mob = (Q * 1e-3 * rho_a)/apm
+     if (vals_equal(bpm, 2)) then
+        mo2 = mob
      else
-        vu = MIN(15., (1000.E6/N0 + 2.))
+        loga_ = sa(1) + sa(2)*tc + sa(3)*bpm &
+             + sa(4)*tc*bpm + sa(5)*tc*tc &
+             + sa(6)*bpm*bpm + sa(7)*tc*tc*bpm &
+             + sa(8)*tc*bpm*bpm + sa(9)*tc*tc*tc &
+             + sa(10)*bpm*bpm*bpm
+        a_ = 10.0**loga_
+        b_ = sb(1) + sb(2)*tc + sb(3)*bpm &
+             + sb(4)*tc*bpm + sb(5)*tc*tc &
+             + sb(6)*bpm*bpm + sb(7)*tc*tc*bpm &
+             + sb(8)*tc*bpm*bpm + sb(9)*tc*tc*tc &
+             + sb(10)*bpm*bpm*bpm
+        mo2 = (mob/a_)**(1./b_)
      endif
-     !write (*,*) vu
+     !write (*,*) "mo2 ", mo2
      
-     !write (*,*) N0
-     
-     D0 = 1E6*(Q*1e-3 * gamma(vu) / &
-          (apm*np*gamma(vu+bpm)))**(1/bpm)
-     !write (*,*) D0
-     N = (np*rho_a/(gamma(vu)*(D*1e-6)))*(D/D0)*exp(-1*D/D0)*1e-12
+     loga_ = sa(1) + sa(2)*tc + sa(3)*cse &
+          + sa(4)*tc*cse + sa(5)*tc*tc &
+          + sa(6)*cse*cse + sa(7)*tc*tc*cse &
+          + sa(8)*tc*cse*cse + sa(9)*tc*tc*tc &
+          + sa(10)*cse*cse*cse
+     a_ = 10.0**loga_
+     b_ = sb(1)+ sb(2)*tc + sb(3)*cse + sb(4)*tc*cse &
+          + sb(5)*tc*tc + sb(6)*cse*cse &
+          + sb(7)*tc*tc*cse + sb(8)*tc*cse*cse &
+          + sb(9)*tc*tc*tc + sb(10)*cse*cse*cse
+     mo3 = a_ * mo2**b_   
+     !write (*,*) "a_ ", a_
+     !write (*,*) "b_ ", b_
+     !write (*,*) "mo3 ", mo3
+     !write (*,*) "Re ", 0.5*(mo3/mo2)*1e6
 
+     mrat = mo2*(mo2/mo3)*(mo2/mo3)*(mo2/mo3)
+     mo0 = (mo2/mo3)**mu_s
+     slam1 = (mo2/mo3)*lam0
+     slam2 = (mo2/mo3)*lam1
+
+     !write (*,*) "mrat ", mrat
+     !write (*,*) "mo0 ", mo0
+     !write (*,*) "slam1 ", slam1
+     !write (*,*) "slam2 ", slam2
+     N = (mrat*kap0*exp(-1*slam1*D*1e-6) &
+          +kap1*mo0* (D*1e-6)**mu_s * exp(-1*slam2*D*1e-6)) * 1e-12
+     
   end select
   
   end subroutine dsd
