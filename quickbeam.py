@@ -113,13 +113,14 @@ class Quickbeam:
                         hm['scaled'] = 0
 
                     if tm_flag:
+                        # Scaled always false for two moment
                         N = radsim.dsd(hm['data'][g, p], D, hm['type'],
                                        rho_a[g, p],
                                        self.met['Temperature'][g, p]-273.15,
                                        hm['dmin'],hm['dmax'],
                                        hm['number'][g, p], hm['p2'],
                                        hm['p3'], hm['fc'],
-                                       hm['scaled'], hm['apm'], hm['bpm'])
+                                       0, hm['apm'], hm['bpm'])
                     else:
                         N = radsim.dsd(hm['data'][g, p], D, hm['type'],
                                        rho_a[g, p],
