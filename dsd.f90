@@ -71,7 +71,7 @@
   real*8 :: pi
 
   ! Parameters for Field 2005 distribution
-  REAL*8 :: mob, mo2, mo3, loga_, a_, b_, cse, omo3, mrat, mo0, slam1, slam2
+  REAL*8 :: mob, mo2, mo3, loga_, a_, b_, cse, mrat, mo0, slam1, slam2
   REAL, DIMENSION(10), PARAMETER:: &
        sa = (/ 5.065339, -0.062659, -3.032362, 0.029469, -0.000285, &
        0.31255,   0.000204,  0.003199, 0.0,      -0.015952/)
@@ -84,7 +84,16 @@
   REAL*8, PARAMETER :: lam0 = 20.78
   REAL*8, PARAMETER :: lam1 = 3.29
 
-  
+  ! Parameters for Thompson graupel distribution
+  REAL*8, PARAMETER :: mu_g = 0.0
+  REAL*8, PARAMETER :: mu_r = 0.0
+  REAL, PARAMETER :: gonv_max = 3.e6
+  REAL, PARAMETER :: gonv_min = 1.e4
+  REAL*8 :: cgg1, cgg2, cgg3, cge1, cge2, cge3, &
+       org2, ilamr, mvd_r, N0_min, &
+       ygra1, zans1, N0_exp, lam_exp, lamg, ilamg, &
+       N0_g, xslw1, crg3
+     
   pi = acos(-1.0)
   
 ! // if density is constant, store equivalent values for apm and bpm
@@ -400,6 +409,45 @@
      !write (*,*) "slam2 ", slam2
      N = (mrat*kap0*exp(-1*slam1*D*1e-6) &
           +kap1*mo0* (D*1e-6)**mu_s * exp(-1*slam2*D*1e-6)) * 1e-12
+
+
+  case(7)
+     cge1 = bpm+1
+     cge2 = mu_g + 1
+     cge3 = bpm + mu_g + 1
+     cgg1 = gamma(cge1)
+     cgg2 = gamma(cge2)
+     cgg3 = gamma(cge3)
+     crg3 = gamma(p3) !Use p3 to pass the value of bpm for rain
+     org2 = 1./gamma(mu_r+1.)
+     
+     !Calc mvd_rain from p1 (Qrain), p2 (QNRAIN)
+     ilamr = (apm * crg3 * org2 * (MAX(1e-12, p2*rho_a)/p1*1e-3*rho_a))**(bpm)
+     mvd_r = (3.0 * mu_r * 0.672) * ilamr
+     
+     ! Thompson graupel distribution
+     N0_min = gonv_max
+
+     if (tc.lt. -2.5 .and. p1.gt.0 .and. mvd_r.gt.100.E-6) then
+        xslw1 = 4.01 + log10(mvd_r)
+     else
+        xslw1 = 0.01
+     endif
+     ygra1 = 4.31 + log10(max(5.E-5, Q*1e-3))
+
+     zans1 = 3.1 + (100./(300.*xslw1*ygra1/(10./xslw1+1.+0.25*ygra1)+30.+10.*ygra1))
+     N0_exp = 10.**(zans1)
+     N0_exp = MAX(DBLE(gonv_min), MIN(N0_exp, DBLE(gonv_max)))
+     N0_min = MIN(N0_exp, N0_min)
+     N0_exp = N0_min
+
+
+     lam_exp = (N0_exp*apm*cgg1/(Q*1e-3*rho_a))**(1/cge1)
+     lamg = lam_exp * (cgg3*(1/cgg2)*(1/cgg1))**(1/bpm)
+     ilamg = 1./lamg
+     N0_g = N0_exp/(cgg2*lam_exp) * lamg**cge2
+
+     N = N0_g * exp(-1*lamg*(D*1e-6))
      
   end select
   
