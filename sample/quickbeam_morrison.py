@@ -8,8 +8,12 @@ import os.path
 from multiprocessing import Pool
 from glob import glob
 
+def create_outfile(inputfile):
+    return '/home/cumulus/cp/Users/gryspeerdt/mor_'+os.path.basename(inputfile)+'.refl2m'
+
+
 def calc_refl(inputfile):
-    outputfile = '/home/cumulus/cp/Users/gryspeerdt/mor_'+os.path.basename(inputfile)+'.refl2m'
+    outputfile = create_outfile(inputfile)
     print os.path.basename(outputfile)
     #test = '/home/edward/LocalData/wrf_testdata.nc'
 
@@ -41,22 +45,22 @@ def calc_refl(inputfile):
 
             qb.hclass[1]['data'] = ncdf.variables[
                 'QRAIN'][time, ::-1, lon, lat_min:lat_max] * 1000
-            qb.hclass[1]['number'] = ncdf.variables[
+            qb.hclass[1]['p1'] = ncdf.variables[
                 'QNRAIN'][time, ::-1, lon, lat_min:lat_max]
 
             qb.hclass[2]['data'] = ncdf.variables[
                 'QSNOW'][time, ::-1, lon, lat_min:lat_max] * 1000
-            qb.hclass[2]['number'] = ncdf.variables[
-                'QNSNOW'][time, ::-1, lon, lat_min:lat_max]
+            qb.hclass[2]['p1'] = ncdf.variables[
+                'QRAIN'][time, ::-1, lon, lat_min:lat_max] * 1000
+            qb.hclass[2]['p2'] = ncdf.variables[
+                'QNRAIN'][time, ::-1, lon, lat_min:lat_max]
 
             qb.hclass[3]['data'] = ncdf.variables[
                 'QGRAUP'][time, ::-1, lon, lat_min:lat_max] * 1000
-            qb.hclass[3]['number'] = ncdf.variables[
-                'QNGRAUPEL'][time, ::-1, lon, lat_min:lat_max]
 
             qb.hclass[4]['data'] = ncdf.variables[
                 'QICE'][time, ::-1, lon, lat_min:lat_max] * 1000
-            qb.hclass[4]['number'] = ncdf.variables[
+            qb.hclass[4]['p1'] = ncdf.variables[
                 'QNICE'][time, ::-1, lon, lat_min:lat_max]
 
             res = qb.radarsim()
@@ -71,5 +75,5 @@ def calc_refl(inputfile):
 
 if __name__ == '__main__':
     pool = Pool(10)
-    files = glob('/home/cumulus/cp/Users/white/data/wrf_congo_basin/ERA-Interim/archer_4km_august_2007_fullrun_pbl_scheme/pre-interp/heightlevs/interp/*INTRP')
+    files = glob('/home/cumulus/cp/Users/white/data/wrf_congo_basin/ERA-Interim/archer_4km_august_2007_10day_pbl_scheme_thompson_250cm3/pre-interp/heightlevs/*INTRP')
     pool.map(calc_refl, files)
