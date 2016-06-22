@@ -86,13 +86,12 @@
 
   ! Parameters for Thompson graupel distribution
   REAL*8, PARAMETER :: mu_g = 0.0
-  REAL*8, PARAMETER :: mu_r = 0.0
   REAL, PARAMETER :: gonv_max = 3.e6
   REAL, PARAMETER :: gonv_min = 1.e4
   REAL*8 :: cgg1, cgg2, cgg3, cge1, cge2, cge3, &
-       org2, ilamr, mvd_r, N0_min, &
+       org2, lamr, mvd_r, N0_min, &
        ygra1, zans1, N0_exp, lam_exp, lamg, ilamg, &
-       N0_g, xslw1, crg3
+       N0_g, xslw1, crg3, mu_r, apm_r, bpm_r
      
   pi = acos(-1.0)
   
@@ -360,10 +359,11 @@
 
   case(6)  
     ! Dual gamma distribution from Field et al. 2005
-    ! Adapted from Tompson microphysics code in WRF
+    ! Adapted from Thompson microphysics code in WRF
      cse = bpm + 1
      
      mob = (Q * 1e-3 * rho_a)/apm
+     !write (*,*) "mob ", mob
      if (vals_equal(bpm, 2)) then
         mo2 = mob
      else
@@ -381,6 +381,8 @@
         mo2 = (mob/a_)**(1./b_)
      endif
      !write (*,*) "mo2 ", mo2
+     !write (*,*) "a_ ", a_
+     !write (*,*) "b_ ", b_
      
      loga_ = sa(1) + sa(2)*tc + sa(3)*cse &
           + sa(4)*tc*cse + sa(5)*tc*tc &
@@ -398,6 +400,11 @@
      !write (*,*) "mo3 ", mo3
      !write (*,*) "Re ", 0.5*(mo3/mo2)*1e6
 
+     !loga_ = sa(1) + sa(2)*tc + sa(5)*tc*tc + sa(9)*tc*tc*tc
+     !a_ = 10.0**loga_
+     !b_ = sb(1) + sb(2)*tc + sb(5)*tc*tc + sb(9)*tc*tc*tc
+     !write (*,*)  a_ * mo2**b_  
+     
      mrat = mo2*(mo2/mo3)*(mo2/mo3)*(mo2/mo3)
      mo0 = (mo2/mo3)**mu_s
      slam1 = (mo2/mo3)*lam0
@@ -412,42 +419,56 @@
 
 
   case(7)
+     !Thompson graupel size distribution
+     ! p1 - Qrain (g/kg)
+     ! p2 - Nrain (kg-1)
+
+     !rain values fixed - pretty unliekly you would want different ones
+     ! anyway, as rain is just water....?
+     mu_r = 0
+     apm_r = 524
+     bpm_r = 3
+     
      cge1 = bpm+1
      cge2 = mu_g + 1
      cge3 = bpm + mu_g + 1
      cgg1 = gamma(cge1)
      cgg2 = gamma(cge2)
      cgg3 = gamma(cge3)
-     crg3 = gamma(p3) !Use p3 to pass the value of bpm for rain
+     crg3 = gamma(bpm_r) 
      org2 = 1./gamma(mu_r+1.)
      
      !Calc mvd_rain from p1 (Qrain), p2 (QNRAIN)
-     ilamr = (apm * crg3 * org2 * (MAX(1e-12, p2*rho_a)/p1*1e-3*rho_a))**(bpm)
-     mvd_r = (3.0 * mu_r * 0.672) * ilamr
+     lamr = (apm_r * crg3 * org2 * (MAX(1e-12, p2*rho_a)/(p1*1e-3*rho_a)))**(1/bpm_r)
+     mvd_r = (3.0 + mu_r + 0.672) / lamr
+
+     !write (*,*) "mvd_r ",mvd_r
      
      ! Thompson graupel distribution
      N0_min = gonv_max
-
-     if (tc.lt. -2.5 .and. p1.gt.0 .and. mvd_r.gt.100.E-6) then
+     if (tc.lt. -2.5 .and. p1.gt.1e-12 .and. mvd_r.gt.100.E-6) then
         xslw1 = 4.01 + log10(mvd_r)
      else
         xslw1 = 0.01
      endif
-     ygra1 = 4.31 + log10(max(5.E-5, Q*1e-3))
+     ygra1 = 4.31 + log10(max(5.E-5, Q*1e-3*rho_a))
 
      zans1 = 3.1 + (100./(300.*xslw1*ygra1/(10./xslw1+1.+0.25*ygra1)+30.+10.*ygra1))
      N0_exp = 10.**(zans1)
      N0_exp = MAX(DBLE(gonv_min), MIN(N0_exp, DBLE(gonv_max)))
      N0_min = MIN(N0_exp, N0_min)
      N0_exp = N0_min
+     !write (*,*) "N0_exp ",N0_exp
 
-
-     lam_exp = (N0_exp*apm*cgg1/(Q*1e-3*rho_a))**(1/cge1)
-     lamg = lam_exp * (cgg3*(1/cgg2)*(1/cgg1))**(1/bpm)
-     ilamg = 1./lamg
+     lam_exp = (N0_exp*apm*cgg1/(Q*1e-3*rho_a))**(1./cge1)
+     lamg = lam_exp * (cgg3*(1./cgg2)*(1./cgg1))**(1./bpm)
      N0_g = N0_exp/(cgg2*lam_exp) * lamg**cge2
 
-     N = N0_g * exp(-1*lamg*(D*1e-6))
+     !write (*,*) "lam_exp ",lam_exp
+     !write (*,*) "lamg ",lamg
+     !write (*,*) "N0_g ",N0_g
+     
+     N = N0_g * exp(-1*lamg*(D*1e-6)) * 1e-12
      
   end select
   

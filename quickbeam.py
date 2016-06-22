@@ -2,7 +2,7 @@ import numpy as np
 import struct
 import radsim
 
-DEBUG = True
+DEBUG = False
 
 metnames = ['Height', 'Pressure',
             'Temperature', 'RH']
@@ -69,7 +69,7 @@ class Quickbeam:
             hm['f'] = np.digitize(rho_eff/917., self.mt['f_bins'])
 
             #Set twomoment flag
-            tm_flag = (hm['type'] in [1, 6])*(hm['p1']==-2)
+            tm_flag = (hm['p1'].shape == hm['data'].shape)
             if DEBUG:
                 print hm['name'], tm_flag
             
@@ -112,23 +112,29 @@ class Quickbeam:
                         hm['fc'] = np.zeros(D.shape)
                         hm['scaled'] = 0
 
-                    if tm_flag:
-                        # Scaled always false for two moment
-                        N = radsim.dsd(hm['data'][g, p], D, hm['type'],
-                                       rho_a[g, p],
-                                       self.met['Temperature'][g, p]-273.15,
-                                       hm['dmin'],hm['dmax'],
-                                       hm['number'][g, p], hm['p2'],
-                                       hm['p3'], hm['fc'],
-                                       0, hm['apm'], hm['bpm'])
+                    if hm['p1'].shape == hm['data'].shape:
+                        p1 = hm['p1'][g, p]
                     else:
-                        N = radsim.dsd(hm['data'][g, p], D, hm['type'],
-                                       rho_a[g, p],
-                                       self.met['Temperature'][g, p]-273.15,
-                                       hm['dmin'],hm['dmax'],
-                                       hm['p1'], hm['p2'],
-                                       hm['p3'], hm['fc'],
-                                       hm['scaled'], hm['apm'], hm['bpm'])
+                        p1 = hm['p1']
+
+                    if hm['p2'].shape == hm['data'].shape:
+                        p2 = hm['p2'][g, p]
+                    else:
+                        p2 = hm['p2']
+
+                    if hm['p3'].shape == hm['data'].shape:
+                        p3 = hm['p3'][g, p]
+                    else:
+                        p3 = hm['p3']
+
+                    # Switch to always recalculating scaled factor,
+                    # necessary for twomoment anyway
+                    N = radsim.dsd(hm['data'][g, p], D, hm['type'],
+                                   rho_a[g, p],
+                                   self.met['Temperature'][g, p]-273.15,
+                                   hm['dmin'],hm['dmax'],
+                                   p1, p2, p3, hm['fc'],
+                                   0, hm['apm'], hm['bpm'])
                         # print N
                     ze, zr, kr = radsim.zeff(self.settings['freq'],
                                              D,
