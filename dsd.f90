@@ -363,7 +363,7 @@
      cse = bpm + 1
      
      mob = (Q * 1e-3 * rho_a)/apm
-     !write (*,*) "mob ", mob
+
      if (vals_equal(bpm, 2)) then
         mo2 = mob
      else
@@ -380,9 +380,6 @@
              + sb(10)*bpm*bpm*bpm
         mo2 = (mob/a_)**(1./b_)
      endif
-     !write (*,*) "mo2 ", mo2
-     !write (*,*) "a_ ", a_
-     !write (*,*) "b_ ", b_
      
      loga_ = sa(1) + sa(2)*tc + sa(3)*cse &
           + sa(4)*tc*cse + sa(5)*tc*tc &
@@ -395,27 +392,14 @@
           + sb(7)*tc*tc*cse + sb(8)*tc*cse*cse &
           + sb(9)*tc*tc*tc + sb(10)*cse*cse*cse
      mo3 = a_ * mo2**b_   
-     !write (*,*) "a_ ", a_
-     !write (*,*) "b_ ", b_
-     !write (*,*) "mo3 ", mo3
-     !write (*,*) "Re ", 0.5*(mo3/mo2)*1e6
-
-     !loga_ = sa(1) + sa(2)*tc + sa(5)*tc*tc + sa(9)*tc*tc*tc
-     !a_ = 10.0**loga_
-     !b_ = sb(1) + sb(2)*tc + sb(5)*tc*tc + sb(9)*tc*tc*tc
-     !write (*,*)  a_ * mo2**b_  
      
      mrat = mo2*(mo2/mo3)*(mo2/mo3)*(mo2/mo3)
      mo0 = (mo2/mo3)**mu_s
      slam1 = (mo2/mo3)*lam0
      slam2 = (mo2/mo3)*lam1
 
-     !write (*,*) "mrat ", mrat
-     !write (*,*) "mo0 ", mo0
-     !write (*,*) "slam1 ", slam1
-     !write (*,*) "slam2 ", slam2
      N = (mrat*kap0*exp(-1*slam1*D*1e-6) &
-          +kap1*mo0* (D*1e-6)**mu_s * exp(-1*slam2*D*1e-6)) * 1e-12
+          +kap1*mrat*mo0* (D*1e-6)**mu_s * exp(-1*slam2*D*1e-6)) * 1e-12
 
 
   case(7)
