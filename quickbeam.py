@@ -173,7 +173,9 @@ class Quickbeam:
         dBZe[z_vol <= 0] = -999.
         return {'Zeff': Ze_non,
                 'Zray': Ze_ray,
-                'Zcorr': dBZe}
+                'Zcorr': dBZe,
+                'g_tv': g_to_vol,
+                'a_tv': a_to_vol}
 
     def read_mie_table(self):
         # Read Mie table

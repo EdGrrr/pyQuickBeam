@@ -32,7 +32,7 @@ def calc_refl(inputfile):
             lat_min, lat_max = 0, refl.shape[-1]
 
             qb.met['Height'] = np.arange(
-                20.5, 0, -1)[:, None].repeat(lat_max - lat_min, axis=1) * 1000
+                20.5, 0, -1)[:, None].repeat(lat_max - lat_min, axis=1)
             qb.met['Pressure'] = ncdf.variables['PRES'][
                 time, ::-1, lon, lat_min:lat_max] / 100.
             qb.met['Temperature'] = ncdf.variables[
