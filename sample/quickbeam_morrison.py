@@ -51,12 +51,12 @@ def calc_refl(inputfile):
             qb.hclass[2]['data'] = ncdf.variables[
                 'QSNOW'][time, ::-1, lon, lat_min:lat_max] * 1000
             qb.hclass[2]['p1'] = ncdf.variables[
-                'QRAIN'][time, ::-1, lon, lat_min:lat_max] * 1000
-            qb.hclass[2]['p2'] = ncdf.variables[
-                'QNRAIN'][time, ::-1, lon, lat_min:lat_max]
+                'QNSNOW'][time, ::-1, lon, lat_min:lat_max]
 
             qb.hclass[3]['data'] = ncdf.variables[
                 'QGRAUP'][time, ::-1, lon, lat_min:lat_max] * 1000
+            qb.hclass[3]['p1'] = ncdf.variables[
+                'QNGRAUPEL'][time, ::-1, lon, lat_min:lat_max] * 1000
 
             qb.hclass[4]['data'] = ncdf.variables[
                 'QICE'][time, ::-1, lon, lat_min:lat_max] * 1000
@@ -74,6 +74,6 @@ def calc_refl(inputfile):
 
 
 if __name__ == '__main__':
-    pool = Pool(10)
-    files = glob('/home/cumulus/cp/Users/white/data/wrf_congo_basin/ERA-Interim/archer_4km_august_2007_10day_pbl_scheme_thompson_250cm3/pre-interp/heightlevs/*INTRP')
+    pool = Pool(20)
+    files = glob('/home/cumulus/cp/Users/white/data/wrf_congo_basin/ERA-Interim/archer_4km_august_2007_fullrun_pbl_scheme/pre-interp/heightlevs/interp/*INTRP')
     pool.map(calc_refl, files)

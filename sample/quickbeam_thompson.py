@@ -77,6 +77,6 @@ def calc_refl(inputfile):
 #calc_refl('/home/edward/LocalData/wrf_testdata.nc')
 
 if __name__ == '__main__':
-    pool = Pool(10)
+    pool = Pool(20)
     files = glob('/home/cumulus/cp/Users/white/data/wrf_congo_basin/ERA-Interim/archer_4km_august_2007_10day_pbl_scheme_thompson_250cm3/pre-interp/heightlevs/interp/*INTRP')
     pool.map(calc_refl, files)
