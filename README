@@ -25,7 +25,17 @@ Run 'make' in the main directory.  Add this directory to your
 $PYTHONPATH.
 
 
-3. Usage
+3. Testing
+----------
+Testing is limited at the moment.  One thing that you can do it run
+
+python sample/testplot.py
+
+in the main quickbeam directory and make sure that it looks similar to
+the example plot sample/example.png
+
+
+4. Usage
 --------
 Much of the design is the same as quickbeam itself.  The simulator is
 run from the Quickbeam class, which does much of the setup upon
