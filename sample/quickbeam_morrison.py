@@ -102,6 +102,10 @@ def calc_refl(inputfile):
 
 
 if __name__ == '__main__':
-    pool = Pool(20)
     files = glob('/home/cumulus/cp/Users/white/data/wrf_congo_basin/ERA-Interim/archer_4km_august_2007_fullrun_pbl_scheme/pre-interp/heightlevs/interp/*INTRP')
-    pool.map(calc_refl, files)
+    # Uncomment these files for simple parallel
+    # pool = Pool(20)
+    # pool.map(calc_refl, files)
+
+    # Simple version
+    map(calc_refl, files)
