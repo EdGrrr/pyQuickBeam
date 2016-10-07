@@ -2,7 +2,6 @@ from netCDF4 import Dataset
 import numpy as np
 import quickbeam
 import sys
-import misc.fileops
 from time import *
 import os.path
 from multiprocessing import Pool
@@ -10,6 +9,35 @@ from glob import glob
 
 def create_outfile(inputfile):
     return '/home/cumulus/cp/Users/gryspeerdt/mor_'+os.path.basename(inputfile)+'.refl2m'
+
+
+def nc4_dump_mv(filename, data, dnames=None):
+    '''Taken from csat.misc.fileops
+    Dumps and array into a netcdf file to store for later.
+    Takes a dictionary of arrays of the same partial shape
+    where the key is the variable name.
+    i.e. (100,20,35) is the same as (100,20).'''
+    ncdf = Dataset(filename, 'w', format='NETCDF4')
+    names = data.keys()
+    ndims = max([len(data[name].shape) for name in names])
+
+    if not dnames:
+        # Use numbers as dimension names if none are given
+        dnames = tuple(str(i) for i in range(ndims))
+
+    for i, sdim in zip(dnames, data[names[0]].shape):
+        ncdf.createDimension(str(i), int(sdim))
+
+    if not type(dnames) == type((1, 2)):
+        dnames = tuple(dnames)
+
+    for vname in names:
+        Var = ncdf.createVariable(vname,
+                                  'f', dnames[:len(data[vname].shape)],
+                                  zlib=True)
+        Var[:] = data[vname].astype('float')
+    ncdf.close()
+    return
 
 
 def calc_refl(inputfile):
@@ -69,8 +97,8 @@ def calc_refl(inputfile):
 
     ncdf.close()
 
-    misc.fileops.nc4_dump_mv(outputfile, {'REFL_94GHz_att':refl_att,
-                                          'REFL_94GHz':refl})
+    nc4_dump_mv(outputfile, {'REFL_94GHz_att':refl_att,
+                             'REFL_94GHz':refl})
 
 
 if __name__ == '__main__':
