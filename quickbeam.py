@@ -32,7 +32,61 @@ D = np.exp(np.linspace(np.log(dmin), np.log(dmax), 85))
 
 class Quickbeam:
     def __init__(self):
-        '''Populate the arrays from example files'''
+        '''Initialise a QuickBeam object. 
+
+The object is populated with some defaults from the example files, so
+you can run a simulation immediately with the 'radarsim' method.
+
+The QuickBeam settings are:
+  'freq': radar frequency
+  'surface_radar': surface (1) or spaceborne (0) radar
+  'use_mie_table': use pre-computed mie data (1)
+  'use_gas_abs': calculate gas absorption (1)
+  'do_ray': Perform rayleigh calculations (1)
+  'k2': k2 value as default (-1)
+  'hydro_file': hydrometeor data file (if using text file)
+                load into Quickbeam instance with read_hydrodata()
+                make sure to call read_class first if updating
+                hydrometor properties
+  'hclass_file': hydrometeor class data
+                 load into Quickbeam instance with read_hclass()
+  'mie_table_name': location of the pre-computed mie data.  Changing this
+                    is not recommened as some assumptions on the table
+                    structure are made in the code
+
+Meteorological data is provided through the 'met' property. This data is
+two dimensional and in the shape (ngate, nprofiles). The met data required
+is:
+
+  Height (m)
+  Pressure (hPa)
+  Temperature (K)
+  RH (%)
+
+Finally, hydrometeor data is provided through the 'hclass'
+property. Each hclass gives the details of a hydrometeor type (size
+distribution, mass-density relationship), along with the data required
+to computer there in each gate. For each hydrometeor type, the
+dictionary in hclass is
+
+  'id': id number
+  'type': size distribution function (-1 to ignore this class)
+  'col': 
+  'phase': Liquid (0) or Ice (1)
+  'cp': TOCHECK - in quickbeam this is used to convert mixing ratios
+        we are not doing that here, probably because g/kg assumed
+  'dmin', 'dmax': Max and min of the size distribution,
+                  currently ignored
+  'apm', 'bpm': For calculating the density-size relationship
+  'rho': Density (if using constant density
+  'p1', 'p2', 'p3': Parameters for size distribution
+  'name': Name of class (not required)
+  'data': Hydrometeor concentration (g/ m3) 
+
+The size distribution parameters can be cosntants, or arrays of model
+data - for example, number concentration in 'p1' if using a modified
+gamma (hclass type=1). 
+        '''
         # The settings for running the code
         self.settings = {n[0]:n[1] for n in settings}
         # Now the hydrometeor data (put the data and parameters into dicts)
@@ -78,19 +132,19 @@ class Quickbeam:
                     if hm['data'][g, p] == 0:
                         continue
                     if self.settings['use_mie_table'] == 1:
+                        # Identify the location in the met table
                         if hm['phase'] == 0:
-                            temp_ind = int((self.met['Temperature'][g, p]-210.65)/5.)
-                            if temp_ind < 0: temp_ind = 0
-                            if temp_ind > (self.mt['cnt_liq']-1): 
-                                temp_ind = self.mt['cnt_liq']-1
+                            temp_ind = int(
+                                (self.met['Temperature'][g, p]-210.65)/5.)
+                            temp_ind = np.clip(
+                                temp_ind, 0, self.mt['cnt_liq']-1)
                             qext = self.mt['qext'][freq_ind, 0, temp_ind]
                             qbsca = self.mt['qbsca'][freq_ind, 0, temp_ind]
                         else:
-                            temp_ind = int((self.met['Temperature'][g, p]
-                                            -180.65)/5.)
-                            if temp_ind <0: temp_ind = 0
-                            if temp_ind > (self.mt['cnt_ice']-1): 
-                                temp_ind = self.mt['cnt_ice']-1
+                            temp_ind = int(
+                                (self.met['Temperature'][g, p]-180.65)/5.)
+                            temp_ind = np.clip(
+                                temp_ind, 0, self.mt['cnt_ice']-1)
                             temp_ind += self.mt['cnt_liq']
                             qext = self.mt['qext'][freq_ind,
                                                    hm['f'],
@@ -101,6 +155,7 @@ class Quickbeam:
                                                      temp_ind,
                                                      range(nd)]
                     else:
+                        # Calculate the properties directly
                         qext, qbsca = radsim.optical_sphere(
                             self.settings['freq'],
                             D,
@@ -109,6 +164,8 @@ class Quickbeam:
                             rho_eff)
 
                     if 'fc' not in hm.keys():
+                        # DSD scaling factor - will be set by radsim.dsd
+                        # if required
                         hm['fc'] = np.zeros(D.shape)
                         hm['scaled'] = 0
 
@@ -127,15 +184,15 @@ class Quickbeam:
                     else:
                         p3 = hm['p3']
 
-                    # Switch to always recalculating scaled factor,
-                    # necessary for twomoment anyway
+                    # Switch to always recalculating scaled factor
+                    # for each layer.
+                    # Necessary for twomoment anyway
                     N = radsim.dsd(hm['data'][g, p], D, hm['type'],
                                    rho_a[g, p],
                                    self.met['Temperature'][g, p]-273.15,
-                                   hm['dmin'],hm['dmax'],
+                                   hm['dmin'], hm['dmax'],
                                    p1, p2, p3, hm['fc'],
                                    0, hm['apm'], hm['bpm'])
-                        # print N
                     ze, zr, kr = radsim.zeff(self.settings['freq'],
                                              D,
                                              N,
@@ -143,7 +200,7 @@ class Quickbeam:
                                              self.settings['do_ray'],
                                              qext,
                                              qbsca)
-                    # print ze, zr, kr
+                    # Add up the reflectivity factors
                     z_vol[g, p] += ze
                     z_ray[g, p] += zr
                     kr_vol[g, p] += kr
@@ -153,6 +210,7 @@ class Quickbeam:
         Ze_non = 10*np.log10(z_vol)
         Ze_non[z_vol <= 0] = -999.
 
+        # Calculate attenuation (gases and hydrometeors)
         a_to_vol = np.zeros(kr_vol.shape)
         g_to_vol = np.zeros(kr_vol.shape)
         g_vol = np.zeros(kr_vol.shape)
@@ -169,6 +227,7 @@ class Quickbeam:
                     g_vol[:, p],
                     self.met['Height'][:, p], 1, g)
 
+        # Return Z effective, Z rayleigh and Z corrected.
         dBZe = Ze_non - a_to_vol - g_to_vol
         dBZe[z_vol <= 0] = -999.
         return {'Zeff': Ze_non,
@@ -236,6 +295,7 @@ class Quickbeam:
             self.mt = mt
 
     def read_hclass(self):
+        # This sets the size distributions for the different hydrometeors
         self.hclass = []
         classinput = np.genfromtxt(self.settings['hclass_file'],
                                    dtype=['f']*(len(hclasscols)-1)+['S30'])
@@ -249,6 +309,7 @@ class Quickbeam:
             self.hclass.append(tempdict)
 
     def read_hydrodata(self):
+        # Some sample hydrometeor/met data
         hm_input = np.genfromtxt(self.settings['hydro_file'], skip_header=2)
         self.met = {}
         # Setup the met data

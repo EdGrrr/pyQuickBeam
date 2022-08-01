@@ -44,6 +44,9 @@ changed in this instance (such as the hydrometeor data) and the
 simulator is run by calling the 'radarsim' method, returning the
 effective and attenuation corrected Z.
 
+It is recommended that you read the quickbeam user guide before using
+this python wrapper, as many of the details are the same.
+
 Example (using quickbeam example data):
 
 import quickbeam
@@ -94,7 +97,7 @@ For each hydrometeor type, the dictionary in hclass is
 'type': size distribution function (-1 to ignore this class)
 'col':
 'phase': Liquid (0) or Ice (1)
-'cp':
+'cp': TOCHECK - it looks like we only accept input hydrometeors in g/kg (WRF output) 
 'dmin', 'dmax': Max and min of the size distribution,
                     currently ignored
 'apm', 'bpm': For calculating the density-size relationship
