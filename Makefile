@@ -17,6 +17,9 @@ LDFLAGS =
 F2PY = f2py3
 F2PY_FLAGS = --quiet
 
+# See https://stackoverflow.com/questions/43618725/makefile-for-f2py-in-python3
+EXT_SUFFIX := $(shell python3-config --extension-suffix)
+
 all: $(PROG)
 
 $(PROG): $(OBJS) $(PROG).pyf $(PROG).so
@@ -26,6 +29,7 @@ $(PROG).pyf: $(OBJS)
 
 $(PROG).so: $(OBJS) $(PROG).pyf
 	$(F2PY) $(F2PY_FLAGS) -c $(PROG).pyf *.f90
+	mv $(PROG).*.so $(PROG).so
 
 clean:
 	rm -f $(PROG).so $(PROG).pyf $(OBJS) *.mod quickbeam.pyc
