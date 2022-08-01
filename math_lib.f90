@@ -96,7 +96,7 @@
 ! function PATH_INTEGRAL
 ! ----------------------------------------------------------------------------
   function path_integral(f,s,i1,i2)
-  use m_mrgrnk
+  use m_mrgrnk, only : mrgrnk
   use array_lib
   implicit none
 !

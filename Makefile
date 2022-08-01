@@ -14,7 +14,7 @@ F90 = gfortran
 F90FLAGS = -fPIC -O
 LDFLAGS = 
 
-F2PY = f2py
+F2PY = f2py3
 F2PY_FLAGS = --quiet
 
 all: $(PROG)

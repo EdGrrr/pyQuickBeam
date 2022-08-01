@@ -1,7 +1,7 @@
   subroutine dsd(Q,D,nsizes,dtype,rho_a,tc, &
              dmin,dmax,p1,p2,p3,fc,scaled,apm,bpm,N)
   use array_lib
-  use math_lib 
+  use math_lib, only : vals_equal, vals_differ
   implicit none
 
 ! Purpose:

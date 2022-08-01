@@ -71,7 +71,7 @@ class Quickbeam:
             #Set twomoment flag
             tm_flag = (hm['p1'].shape == hm['data'].shape)
             if DEBUG:
-                print hm['name'], tm_flag
+                print(hm['name'], tm_flag)
             
             for g in range(z_vol.shape[0]):
                 for p in range(z_vol.shape[1]):
@@ -177,7 +177,7 @@ class Quickbeam:
 
     def read_mie_table(self):
         # Read Mie table
-        with open(self.settings['mie_table_name']) as file:
+        with open(self.settings['mie_table_name'], 'rb') as file:
             data = file.read()
             mt = {}
 

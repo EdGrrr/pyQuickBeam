@@ -1,6 +1,6 @@
   subroutine optical_sphere(freq,D,nsizes,tt,ice,rho_e,qext,qbsca)
   use math_lib
-  use optics_lib
+  use optics_lib, only : mieint, m_wat, m_ice
   implicit none
   
 ! Purpose:

@@ -43,7 +43,7 @@
   cr                            ! kr(dB/km) = cr * kr(1/km)
   
   real*8 :: pi
-  real*8 :: eta_sum, eta_mie, const, z0_eff, z0_ray, k_sum
+  real*8 :: eta_sum, eta_mie, const_factor, z0_eff, z0_ray, k_sum
 
   pi = acos(-1.0)
 
@@ -71,8 +71,8 @@
   endif
  
   eta_mie = eta_sum*0.25*pi
-  const = (wl**4/pi**5)*(1./k2)
-  z0_eff = const*eta_mie
+  const_factor = (wl**4/pi**5)*(1./k2)
+  z0_eff = const_factor*eta_mie
 
 ! // kr = 0.25*cr*sum[qext*pi*D^2*N(D)*deltaD]
 !                 <---------- k_sum --------->  

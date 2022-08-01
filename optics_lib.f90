@@ -595,19 +595,19 @@
       Integer * 2  Imaxnp
       Parameter (Imaxnp = 10000)  ! Change this as required
 !     INPUT
-      Real * 8     Dx
-      Complex * 16  SCm
-      Integer * 4  Inp
-      Real * 8     Dqv(Inp)
+      Real * 8,     intent(in) :: Dx
+      Complex * 16, intent(in) :: SCm
+      Integer * 4,  intent(in) :: Inp
+      Real * 8,     intent(in) :: Dqv(Inp)
 !     OUTPUT
-      Complex * 16  Xs1(InP)
-      Complex * 16  Xs2(InP)
-      Real * 8     Dqxt
-      Real * 8     Dqsc
-      Real * 8     Dg
-      Real * 8     Dbsc
-      Real * 8     DPh(InP)
-      Integer * 4  Error
+      Complex * 16, intent(out) :: Xs1(InP)
+      Complex * 16, intent(out) :: Xs2(InP)
+      Real * 8,     intent(out) :: Dqxt
+      Real * 8,     intent(out) :: Dqsc
+      Real * 8,     intent(out) :: Dg
+      Real * 8,     intent(out) :: Dbsc
+      Real * 8,     intent(out) :: DPh(InP)
+      Integer * 4,  intent(out) :: Error
 !     LOCAL
       Integer * 2  I
       Integer * 2  NStop

@@ -14,7 +14,7 @@
 ! function INFIND
 ! ----------------------------------------------------------------------------
   function infind(list,val,sort,dist)
-  use m_mrgrnk
+  use m_mrgrnk, only : mrgrnk
   implicit none
 !
 ! Purpose:
