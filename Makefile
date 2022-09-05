@@ -1,12 +1,14 @@
 PROG =	radsim
 
 SRCS =	array_lib.f90 dsd.f90 gases.f90 math_lib.f90 \
-	mrgrnk.f90 optical_sphere.f90 optics_lib.f90 \
+	m_mrgrnk.f90 optical_sphere.f90 optics_lib.f90 \
 	zeff.f90
 
-OBJS =	array_lib.o dsd.o gases.o math_lib.o mrgrnk.o \
+OBJS =	array_lib.o dsd.o gases.o math_lib.o m_mrgrnk.o \
 	optical_sphere.o optics_lib.o \
 	zeff.o
+
+LIB_SRC = dsd.f90 math_lib.f90 optical_sphere.f90 zeff.f90 gases.f90
 
 LIBS =	
 
@@ -25,7 +27,7 @@ all: $(PROG)
 $(PROG): $(OBJS) $(PROG).pyf $(PROG).so
 
 $(PROG).pyf: $(OBJS)
-	$(F2PY) $(F2PY_FLAGS) -m $(PROG) -h $(PROG).pyf *.f90
+	$(F2PY) $(F2PY_FLAGS) -m $(PROG) -h $(PROG).pyf $(LIB_SRC)
 
 $(PROG).so: $(OBJS) $(PROG).pyf
 	$(F2PY) $(F2PY_FLAGS) -c $(PROG).pyf *.f90
@@ -39,8 +41,8 @@ clean:
 .f90.o:
 	$(F90) $(F90FLAGS) -c $<
 
-array_lib.o: mrgrnk.o
+array_lib.o: m_mrgrnk.o
 dsd.o: array_lib.o math_lib.o
-math_lib.o: array_lib.o mrgrnk.o
+math_lib.o: array_lib.o m_mrgrnk.o
 optical_sphere.o: math_lib.o optics_lib.o
 zeff.o: math_lib.o
