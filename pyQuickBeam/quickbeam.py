@@ -1,5 +1,6 @@
 import numpy as np
 import struct
+import pkg_resources
 import radsim
 
 DEBUG = False
@@ -19,9 +20,12 @@ settings = [('freq', 94),
             ('output_format', 2),
             ('output_disp', 0),
             ('k2', -1),
-            ('hydro_file', 'data/hydromet_example.dat'),
-            ('hclass_file', 'data/hclass.dat'),
-            ('mie_table_name', 'data/mie_table.dat')]
+            ('hydro_file', pkg_resources.resource_filename(
+                'pyQB', 'data/hydromet_example.dat')),
+            ('hclass_file', pkg_resources.resource_filename(
+                'pyQB', 'data/hclass.dat')),
+            ('mie_table_name', pkg_resources.resource_filename(
+                'pyQB', 'data/mie_table.dat'))]
 
 # Constants
 maxhclass = 50  # Number of hm classes

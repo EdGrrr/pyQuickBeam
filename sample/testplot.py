@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
-import quickbeam
+import pyQB
 
-qb = quickbeam.Quickbeam()
+qb = pyQB.Quickbeam()
 refl = qb.radarsim()
 
 plt.plot(refl['Zeff'], qb.met['Height'], label='Effective')

@@ -1,0 +1,96 @@
+!    -*- f90 -*-
+! Note: the context of this file is case sensitive.
+
+python module radsim ! in 
+    interface  ! in :radsim
+        subroutine dsd(q,d,nsizes,dtype,rho_a,tc,dmin,dmax,p1,p2,p3,fc,scaled,apm,bpm,n) ! in :radsim:dsd.f90
+            use array_lib
+            use math_lib, only: vals_equal,vals_differ
+            real*8 intent(in) :: q
+            real*8 dimension(nsizes),intent(in) :: d
+            integer*4, optional,intent(in),check(len(d)>=nsizes),depend(d) :: nsizes=len(d)
+            integer intent(in) :: dtype
+            real*8 intent(in) :: rho_a
+            real*8 intent(in) :: tc
+            real*8 intent(in) :: dmin
+            real*8 intent(in) :: dmax
+            real*8 intent(in) :: p1
+            real*8 intent(in) :: p2
+            real*8 intent(in) :: p3
+            real*8 dimension(nsizes),intent(inout),depend(nsizes) :: fc
+            logical intent(inout) :: scaled
+            real*8 intent(in) :: apm
+            real*8 intent(in) :: bpm
+            real*8 dimension(nsizes),intent(out),depend(nsizes) :: n
+        end subroutine dsd
+        module math_lib ! in :radsim:math_lib.f90
+            function gamma(x) ! in :radsim:math_lib.f90:math_lib
+                real*8 intent(in) :: x
+                real*8 :: gamma
+            end function gamma
+            function path_integral(f,s,i1,i2) ! in :radsim:math_lib.f90:math_lib
+                use m_mrgrnk, only: mrgrnk
+                use array_lib
+                real*8 dimension(:),intent(in) :: f
+                real*8 dimension(:),intent(in) :: s
+                integer*4 intent(in) :: i1
+                integer*4 intent(in) :: i2
+                real*8 :: path_integral
+            end function path_integral
+            subroutine avint(ftab,xtab,ntab,a_in,b_in,result) ! in :radsim:math_lib.f90:math_lib
+                real(kind=8) dimension(ntab),intent(in) :: ftab
+                real(kind=8) dimension(ntab),intent(in),depend(ntab) :: xtab
+                integer, optional,intent(in),check(len(ftab)>=ntab),depend(ftab) :: ntab=len(ftab)
+                real(kind=8) intent(in) :: a_in
+                real(kind=8) intent(in) :: b_in
+                real(kind=8) intent(out) :: result
+            end subroutine avint
+            function vals_equal(val1,val2) ! in :radsim:math_lib.f90:math_lib
+                real*8 intent(in) :: val1
+                integer intent(in) :: val2
+                logical :: vals_equal
+            end function vals_equal
+            function vals_differ(val1,val2) ! in :radsim:math_lib.f90:math_lib
+                real*8 intent(in) :: val1
+                integer intent(in) :: val2
+                logical :: vals_differ
+            end function vals_differ
+        end module math_lib
+        subroutine optical_sphere(freq,d,nsizes,tt,ice,rho_e,qext,qbsca) ! in :radsim:optical_sphere.f90
+            use math_lib
+            use optics_lib, only: mieint,m_wat,m_ice
+            real*8 intent(in) :: freq
+            real*8 dimension(nsizes),intent(in) :: d
+            integer*4, optional,intent(in),check(len(d)>=nsizes),depend(d) :: nsizes=len(d)
+            real*8 intent(in) :: tt
+            integer intent(in) :: ice
+            real*8 dimension(nsizes),intent(in),depend(nsizes) :: rho_e
+            real*8 dimension(nsizes),intent(out),depend(nsizes) :: qext
+            real*8 dimension(nsizes),intent(out),depend(nsizes) :: qbsca
+        end subroutine optical_sphere
+        subroutine zeff(freq,d,n,nsizes,k2,xr,qext,qbsca,z_eff,z_ray,kr) ! in :radsim:zeff.f90
+            use math_lib
+            real*8 intent(in) :: freq
+            real*8 dimension(nsizes),intent(in) :: d
+            real*8 dimension(nsizes),intent(in),depend(nsizes) :: n
+            integer*4, optional,intent(in),check(len(d)>=nsizes),depend(d) :: nsizes=len(d)
+            real*8 intent(inout) :: k2
+            integer intent(in) :: xr
+            real*8 dimension(nsizes),intent(in),depend(nsizes) :: qext
+            real*8 dimension(nsizes),intent(in),depend(nsizes) :: qbsca
+            real*8 intent(out) :: z_eff
+            real*8 intent(out) :: z_ray
+            real*8 intent(out) :: kr
+        end subroutine zeff
+        function gases(pres_mb,t,rh,f) ! in :radsim:gases.f90
+            real*8 intent(in) :: pres_mb
+            real*8 intent(in) :: t
+            real*8 intent(in) :: rh
+            real*8 intent(in) :: f
+            real*8 :: gases
+        end function gases
+    end interface 
+end python module radsim
+
+! This file was auto-generated with f2py (version:1.21.2).
+! See http://cens.ioc.ee/projects/f2py2e/

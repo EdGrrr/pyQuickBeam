@@ -30,10 +30,13 @@ $(PROG).pyf: $(OBJS)
 	$(F2PY) $(F2PY_FLAGS) -m $(PROG) -h $(PROG).pyf $(LIB_SRC)
 
 $(PROG).so: $(OBJS) $(PROG).pyf
-	$(F2PY) $(F2PY_FLAGS) -c $(PROG).pyf *.f90
+	$(F2PY) $(F2PY_FLAGS) -c $(PROG).pyf $(SRCS)
 	mv $(PROG).*.so $(PROG).so
 
 clean:
+	rm -f $(PROG).so $(OBJS) *.mod quickbeam.pyc
+
+clean-all:
 	rm -f $(PROG).so $(PROG).pyf $(OBJS) *.mod quickbeam.pyc
 
 .SUFFIXES: $(SUFFIXES) .f90
