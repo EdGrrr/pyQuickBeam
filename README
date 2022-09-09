@@ -29,7 +29,7 @@ $PYTHONPATH.
 ----------
 Testing is limited at the moment.  One thing that you can do it run
 
-python sample/testplot.py
+python example/testplot.py
 
 in the main quickbeam directory and make sure that it looks similar to
 the example plot sample/example.png
