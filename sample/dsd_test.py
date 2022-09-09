@@ -1,4 +1,4 @@
-import radsim
+import pyQuickBeam
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.special import gamma
@@ -19,64 +19,69 @@ apm = (6/np.pi) * 100
 bpm = 2.
 Q = 1.34
 
-N1 = radsim.dsd(Q,  # Mixing ratio
-                D,  # Size dist
-                6,  # Dist type
-                1.1,  # Density of air
-                -30,  # Temp
-                dmin,  # dmin
-                dmax,  # dmax
-                -1,
-                -1,
-                -1,
-                fc,  # fc
-                0,  # scaled?
-                apm,  # apm
-                2)  # bpm
+N1 = pyQuickBeam.dsd(Q,  # Mixing ratio
+                     D,  # Size dist
+                     6,  # Dist type
+                     1.1,  # Density of air
+                     -30,  # Temp
+                     dmin,  # dmin
+                     dmax,  # dmax
+                     -1,
+                     -1,
+                     -1,
+                     fc,  # fc
+                     0,  # scaled?
+                     apm,  # apm
+                     bpm)  # bpm
 
-N2 = radsim.dsd(Q,  # Mixing ratio
-                D,  # Size dist
-                1,  # Dist type
-                1.1,  # Density of air
-                -30,  # Temp
-                dmin,  # dmin
-                dmax,  # dmax
-                250000,
-                -2,
-                -3,
-                fc,  # fc
-                0,  # scaled?
-                apm,  # apm
-                bpm)  # bpm
+N2 = pyQuickBeam.dsd(Q,  # Mixing ratio
+                     D,  # Size dist
+                     1,  # Dist type
+                     1.1,  # Density of air
+                     -30,  # Temp
+                     dmin,  # dmin
+                     dmax,  # dmax
+                     250000,
+                     -2,
+                     -3,
+                     fc,  # fc
+                     0,  # scaled?
+                     apm,  # apm
+                     bpm)  # bpm
 
-N3 = radsim.dsd(Q,  # Mixing ratio
-                D,  # Size dist
-                7,  # Dist type
-                1.1,  # Density of air
-                -30,  # Temp
-                dmin,  # dmin
-                dmax,  # dmax
-                Q*100,
-                10000,
-                -1,
-                fc,  # fc
-                0,  # scaled?
-                apm,  # apm
-                bpm)  # bpm
-print 'Field 2005 distn'
-print 'N1 num : ', (Dwidth*N1).sum()*1e6/1.071
-print 'N1 mass: ', (Dwidth*N1*apm*(Dmean)**2).sum()
-print ''
-print 'Modified Gamma'
-print 'N2 num : ', (Dwidth*N2).sum()*1e6/1.071
-print 'N2 mass: ', (Dwidth*N2*apm*(Dmean)**bpm).sum()
-print ''
-print 'Thompson graupel'
-print 'N3 num : ', (Dwidth*N3).sum()*1e6/1.071
-print 'N3 mass: ', (Dwidth*N3*apm*(Dmean)**bpm).sum()
+N3 = pyQuickBeam.dsd(Q,  # Mixing ratio
+                     D,  # Size dist
+                     7,  # Dist type
+                     1.1,  # Density of air
+                     -30,  # Temp
+                     dmin,  # dmin
+                     dmax,  # dmax
+                     Q*100,
+                     10000,
+                     -1,
+                     fc,  # fc
+                     0,  # scaled?
+                     apm,  # apm
+                     bpm)  # bpm
 
+for dsdN, name in [(N1, 'Field 2005'),
+                   (N2, 'Modified Gamma'),
+                   (N3, 'Thompson Graupel')]:
+    print('{: >20}. Num:{:.0f} Mass: {:.0f}'.format(
+        name,
+        (Dwidth*dsdN).sum()*1e6/1.071,
+        (Dwidth*dsdN*apm*(Dmean)**bpm).sum()))
 
-plt.plot(np.log(D), N1*D**2)
-#plt.plot(np.log(D), np.log(N2))
-#plt.plot(np.log(D), np.log(N3))
+    plt.plot(D, dsdN, label=name)
+
+plt.semilogx()
+plt.semilogy()
+
+plt.xlim(D[0], D[-1])
+plt.ylim(1e-14, 1e-1)
+
+plt.xlabel('D (um)')
+plt.ylabel(r'$\frac{d\ln N}{d \ln D}$')
+
+plt.legend()
 plt.show()
