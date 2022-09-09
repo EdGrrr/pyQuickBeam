@@ -21,11 +21,11 @@ settings = [('freq', 94),
             ('output_disp', 0),
             ('k2', -1),
             ('hydro_file', pkg_resources.resource_filename(
-                'pyQB', 'data/hydromet_example.dat')),
+                'pyQuickBeam', 'data/hydromet_example.dat')),
             ('hclass_file', pkg_resources.resource_filename(
-                'pyQB', 'data/hclass.dat')),
+                'pyQuickBeam', 'data/hclass.dat')),
             ('mie_table_name', pkg_resources.resource_filename(
-                'pyQB', 'data/mie_table.dat'))]
+                'pyQuickBeam', 'data/mie_table.dat'))]
 
 # Constants
 maxhclass = 50  # Number of hm classes
