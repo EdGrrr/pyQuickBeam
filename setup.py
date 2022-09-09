@@ -1,21 +1,22 @@
 from numpy.distutils.core import setup, Extension
 
-wrappers = [
-    Extension('radsim', sources=[
-        'radsim.pyf',
-        'math_lib.f90',
-        'dsd.f90',
-        'array_lib.f90',
-        'gases.f90',
-        'optical_sphere.f90',
-        'optics_lib.f90',
-        'zeff.f90'], libraries=[
-            'math_lib',
-            'array_lib',
-            'm_mrgrnk']),]
-              
-
 f90_args = ['-fPIC', '-O']
+
+wrappers = [
+    Extension(
+        'radsim',
+        sources=['src/radsim.pyf',
+                 'src/math_lib.f90',
+                 'src/dsd.f90',
+                 'src/array_lib.f90',
+                 'src/gases.f90',
+                 'src/optical_sphere.f90',
+                 'src/optics_lib.f90',
+                 'src/zeff.f90'],
+        libraries=['math_lib',
+                   'array_lib',
+                   'm_mrgrnk'],
+        extra_f90_compile_args=f90_args),]
 
 setup(
     name='pyQuickBeam',
@@ -33,15 +34,15 @@ setup(
     package_data = {'pyQuickBeam': ['data/*']},
     libraries = [
         ('m_mrgrnk', dict(
-            sources=['m_mrgrnk.f90'],
+            sources=['src/m_mrgrnk.f90'],
             extra_f90_compile_args=f90_args)),
         ('array_lib', dict(
-            sources=['array_lib.f90',
-                     'm_mrgrnk.f90'],
+            sources=['src/array_lib.f90',
+                     'src/m_mrgrnk.f90'],
             extra_f90_compile_args=f90_args)),
         ('math_lib', dict(
-            sources=['math_lib.f90',
-                     'm_mrgrnk.f90'],
+            sources=['src/math_lib.f90',
+                     'src/m_mrgrnk.f90'],
             extra_f90_compile_args=f90_args)),
     ],
     ext_modules = wrappers
