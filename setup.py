@@ -26,7 +26,7 @@ setup(
     maintainer='Edward Gryspeerdt',
     maintainer_email='e.gryspeerdt@imperial.ac.uk',
     description='A simple python interface/wrapper for the QuickBeam radar simulator',
-    license='BSD (3-clause)',
+    license='Quickbeam license',
     url='https://github.com/EdGrrr/pyQuickBeam',
     install_requires=['numpy',
                       'matplotlib'],
