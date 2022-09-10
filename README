@@ -21,8 +21,16 @@ and the data access functions.
 
 2. Installation
 ---------------
-Run 'make' in the main directory.  Add this directory to your
-$PYTHONPATH.
+After cloning the code directory, run
+
+pip install . 
+
+in the root directory.
+
+pip install -e .
+
+Will install so that you can modify the code in place (similar to
+`python setup.py develop`)
 
 
 3. Testing
@@ -49,8 +57,8 @@ this python wrapper, as many of the details are the same.
 
 Example (using quickbeam example data):
 
-import quickbeam
-qb = quickbeam.Quickbeam()
+import pyQuickBeam
+qb = pyQuickBeam.Quickbeam()
 reflectivity = qb.radarsim()
 
 The structure of the Quickbeam object is
