@@ -1,5 +1,21 @@
 from numpy.distutils.core import setup, Extension
+import re
 
+
+# Version code from https://stackoverflow.com/questions/458550/standard-way-to-embed-version-into-python-package
+VERSIONFILE = "pyQuickBeam/_version.py"
+verstrline = open(VERSIONFILE, "rt").read()
+VSRE = r"^__version__ = ['\"]([^'\"]*)['\"]"
+mo = re.search(VSRE, verstrline, re.M)
+if mo:
+    verstr = mo.group(1)
+else:
+    raise RuntimeError("Unable to find version string in %s." % (VERSIONFILE,))
+
+
+######################
+# FORTRAN code setup #
+######################
 f90_args = ['-fPIC', '-O']
 
 wrappers = [
@@ -20,7 +36,7 @@ wrappers = [
 
 setup(
     name='pyQuickBeam',
-    version='0.1',
+    version=verstr,
     author='Edward Gryspeerdt',
     author_email='e.gryspeerdt@imperial.ac.uk',
     maintainer='Edward Gryspeerdt',
