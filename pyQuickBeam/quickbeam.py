@@ -209,10 +209,11 @@ gamma (hclass type=1).
                     z_ray[g, p] += zr
                     kr_vol[g, p] += kr
 
-        Ze_ray = 10*np.log10(z_ray)
-        Ze_ray[z_vol <= 0] = -999.
-        Ze_non = 10*np.log10(z_vol)
-        Ze_non[z_vol <= 0] = -999.
+        with np.errstate(divide='ignore'):
+            Ze_ray = 10*np.log10(z_ray)
+            Ze_ray[z_vol <= 0] = -999.
+            Ze_non = 10*np.log10(z_vol)
+            Ze_non[z_vol <= 0] = -999.
 
         # Calculate attenuation (gases and hydrometeors)
         a_to_vol = np.zeros(kr_vol.shape)

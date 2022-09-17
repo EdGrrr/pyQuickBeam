@@ -44,8 +44,7 @@ setup(
     description='A simple python interface/wrapper for the QuickBeam radar simulator',
     license='Quickbeam license',
     url='https://github.com/EdGrrr/pyQuickBeam',
-    install_requires=['numpy',
-                      'matplotlib'],
+    install_requires=['numpy'],
     packages=['pyQuickBeam'],
     package_data = {'pyQuickBeam': ['data/*']},
     libraries = [
